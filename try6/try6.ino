@@ -39,7 +39,7 @@ void initPins() {
 }
 
 void initWifi() {
-    WiFi.begin(ssid, password);
+        WiFi.begin(ssid, password);
     Serial.print("Connecting to Wi-Fi");
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
@@ -99,7 +99,7 @@ void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
             Serial.println("WebSocket Binary Message");
             break;
         default:
-            Serial.println("Unknown WebSocket event");
+            Serial.printf("Unknown WebSocket event. Type: %d, Payload: %s, Length: %d\n", type, payload, length);
             break;
     }
 }
@@ -115,7 +115,7 @@ void setup() {
 }
 
 void loop() {
-    Serial.printf("isWebSocketConnected %s, attemptWebsocketConnection %s\n", isWebSocketConnected, attemptWebsocketConnection);
+    // Serial.printf("isWebSocketConnected %d, attemptWebsocketConnection %d\n", isWebSocketConnected, attemptWebsocketConnection);
     // Check if the button is pressed
     if (digitalRead(BUTTON_PIN) == LOW && !isWebSocketConnected) {
         Serial.println("Button pressed. Connecting to WebSocket...");
@@ -152,3 +152,5 @@ void loop() {
 
     delay(10);  // Small delay to prevent tight looping
 }
+
+
