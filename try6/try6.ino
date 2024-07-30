@@ -114,8 +114,14 @@ void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
             }
             break;
         case WStype_BIN:
-            Serial.println("WebSocket Binary Message");
-            break;
+            Serial.print("Received Binary Message of length: ");
+    Serial.println(length);
+    Serial.print("Data: ");
+    for (size_t i = 0; i < length; i++) {
+        Serial.printf("%02X ", payload[i]); // Print each byte in HEX
+    }
+    Serial.println(); // New line after printing all data
+    break;
         default:
             Serial.printf("Unknown WebSocket event. Type: %d, Payload: %s, Length: %d\n", type, payload, length);
             break;
