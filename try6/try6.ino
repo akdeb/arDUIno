@@ -29,7 +29,7 @@ ConverterFillLeftAndRight<int16_t> filler(RightIsEmpty); // fill both channels -
 
 // Variable to track WebSocket connection state
 static bool isWebSocketConnected = false;
-static bool shouldReconnect = true;
+static bool attemptWebsocketConnection = false;
 
 // Function to initialize the button and LED
 void initPins() {
@@ -66,33 +66,34 @@ void startI2S() {
 // Function to handle WebSocket disconnection and deinitialization
 void disconnectWebSocket() {
     webSocket.disconnect();
-        digitalWrite(LED_PIN, LOW); // Turn off LED
-        isWebSocketConnected = false; // Update connection state
-        shouldReconnect = false; // Prevent automatic reconnection
-        Serial.println("WebSocket Disconnected and deinitialized");
+    i2sStream.end();
+    digitalWrite(LED_PIN, LOW); // Turn off LED
+    isWebSocketConnected = false; // Update connection state
+    attemptWebsocketConnection = false; // Prevent automatic reconnection
+    Serial.println("WebSocket Disconnected and deinitialized");
+}
+
+void connectWebSocket() {
+    Serial.println("WebSocket Connected");
+    digitalWrite(LED_PIN, HIGH); // Turn on LED
+    isWebSocketConnected = true; // Update connection state
+    startI2S();
 }
 
 // Event handler for WebSocket events
 void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
     switch (type) {
         case WStype_DISCONNECTED:
-            Serial.println("WebSocket Disconnected");
-            disconnectWebSocket(); // Deinitialize I2S
+            disconnectWebSocket(); 
             break;
         case WStype_CONNECTED:
-            Serial.println("WebSocket Connected");
-            digitalWrite(LED_PIN, HIGH); // Turn on LED
-            isWebSocketConnected = true; // Update connection state
-            startI2S();
+            connectWebSocket();
             break;
         case WStype_TEXT:
             Serial.printf("WebSocket Message: %s\n", payload);
             if (strcmp((char*)payload, "OFF") == 0) {
-                webSocket.disconnect();
-                digitalWrite(LED_PIN, LOW); // Turn off the LED
-                isWebSocketConnected = false; // Update connection state
-                shouldReconnect = false; // Prevent automatic reconnection            
-                }
+                disconnectWebSocket();          
+            }
             break;
         case WStype_BIN:
             Serial.println("WebSocket Binary Message");
@@ -114,11 +115,12 @@ void setup() {
 }
 
 void loop() {
+    Serial.printf("isWebSocketConnected %s, attemptWebsocketConnection %s\n", isWebSocketConnected, attemptWebsocketConnection);
     // Check if the button is pressed
     if (digitalRead(BUTTON_PIN) == LOW && !isWebSocketConnected) {
         Serial.println("Button pressed. Connecting to WebSocket...");
         // Reset the shouldReconnect flag
-        shouldReconnect = true;
+        attemptWebsocketConnection = true;
 
         // Set up WebSocket
         webSocket.begin(websocket_server, websocket_port, websocket_path);
@@ -133,7 +135,7 @@ void loop() {
     }
 
     // Handle WebSocket
-    if (isWebSocketConnected || shouldReconnect) {
+    if (isWebSocketConnected || attemptWebsocketConnection) {
         webSocket.loop();
     }
 
@@ -148,6 +150,5 @@ void loop() {
         }
     }
 
-        delay(10);  // Small delay to prevent tight looping
-
+    delay(10);  // Small delay to prevent tight looping
 }
