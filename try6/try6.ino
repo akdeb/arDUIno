@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <WebSocketsClient.h>
 #include "AudioTools.h"
+#include <ArduinoJson.h>
 
 // Replace with your network credentials
 const char* ssid = "launchlab";
@@ -10,6 +11,7 @@ const char* password = "LaunchLabRocks";
 const char* websocket_server = "192.168.2.236";
 const uint16_t websocket_port = 8000;
 const char* websocket_path = "/starmoon";
+const char* auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imp1bnJ1eGlvbmdAZ21haWwuY29tIiwidXNlcl9pZCI6IjAwNzljZWU5LTE4MjAtNDQ1Ni05MGE0LWU4YzI1MzcyZmUyOSIsImNyZWF0ZWRfdGltZSI6IjIwMjQtMDctMDhUMDA6MDA6MDAuMDAwWiJ9.tN8PhmPuiXAUKOagOlcfNtVzdZ1z--8H2HGd-zk6BGE";
 
 // Button pin
 #define BUTTON_PIN 18
@@ -23,6 +25,15 @@ const char* websocket_path = "/starmoon";
 // Create an instance of the WebSocket client
 WebSocketsClient webSocket;
 
+// Function to create JSON message with the authentication token
+String createAuthTokenMessage(const char* token) {
+    StaticJsonDocument<200> doc;
+    doc["token"] = token;
+    String jsonString;
+    serializeJson(doc, jsonString);
+    return jsonString;
+}
+
 // I2S stream for capturing audio
 I2SStream i2sStream;
 ConverterFillLeftAndRight<int16_t> filler(RightIsEmpty); // fill both channels - or change to RightIsEmpty
@@ -30,6 +41,7 @@ ConverterFillLeftAndRight<int16_t> filler(RightIsEmpty); // fill both channels -
 // Variable to track WebSocket connection state
 static bool isWebSocketConnected = false;
 static bool attemptWebsocketConnection = false;
+static String authMessage; // Declare the String variable outside the switch statement
 
 // Function to initialize the button and LED
 void initPins() {
@@ -75,6 +87,12 @@ void disconnectWebSocket() {
 
 void connectWebSocket() {
     Serial.println("WebSocket Connected");
+
+    // auth step
+    authMessage = createAuthTokenMessage(auth_token);
+    Serial.println(authMessage);
+    webSocket.sendTXT(authMessage);
+
     digitalWrite(LED_PIN, HIGH); // Turn on LED
     isWebSocketConnected = true; // Update connection state
     startI2S();
