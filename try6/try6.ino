@@ -7,8 +7,9 @@
 const char* ssid = "launchlab";
 const char* password = "LaunchLabRocks";
 
-// WebSocket server details
-const char* websocket_server = "192.168.2.236";
+// WebSocket server details 
+// const char* websocket_server = "192.168.2.236";
+const char* websocket_server = "192.168.2.179";
 const uint16_t websocket_port = 8000;
 const char* websocket_path = "/starmoon";
 const char* auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imp1bnJ1eGlvbmdAZ21haWwuY29tIiwidXNlcl9pZCI6IjAwNzljZWU5LTE4MjAtNDQ1Ni05MGE0LWU4YzI1MzcyZmUyOSIsImNyZWF0ZWRfdGltZSI6IjIwMjQtMDctMDhUMDA6MDA6MDAuMDAwWiJ9.tN8PhmPuiXAUKOagOlcfNtVzdZ1z--8H2HGd-zk6BGE";
@@ -115,13 +116,13 @@ void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
             break;
         case WStype_BIN:
             Serial.print("Received Binary Message of length: ");
-    Serial.println(length);
-    Serial.print("Data: ");
-    for (size_t i = 0; i < length; i++) {
-        Serial.printf("%02X ", payload[i]); // Print each byte in HEX
-    }
-    Serial.println(); // New line after printing all data
-    break;
+            Serial.println(length);
+            Serial.print("Data: ");
+            for (size_t i = 0; i < length; i++) {
+                Serial.printf("%02X ", payload[i]); // Print each byte in HEX
+            }
+            Serial.println(); // New line after printing all data
+            break;
         default:
             Serial.printf("Unknown WebSocket event. Type: %d, Payload: %s, Length: %d\n", type, payload, length);
             break;
